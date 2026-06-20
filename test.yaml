@@ -1,0 +1,70 @@
+# pgtest configuration file
+# Database connection
+driver: postgres
+dsn: "$DATABASE_URL"
+# Or: host=localhost port=5432 user=postgres dbname=postgres sslmode=disable
+
+# Global variables available to all test cases
+globals:
+  default_limit: 100
+
+# SQL statements to run before all tests
+setup:
+  - create-schema
+
+# SQL statements to run after all tests
+teardown:
+  - drop-schema
+
+# Test cases
+cases:
+  - name: "basic_query"
+    desc: "Verify basic query execution"
+    setup:
+      - create-test-data
+    teardown:
+      - cleanup-test-data
+    vars:
+      user_email: "test@example.com"
+    steps:
+      - name: "find-all-users"
+        assert: "count > 0"
+        expect_cols: ["id", "name", "email"]
+
+      - name: "find_by_email"
+        query: "SELECT id, name, email FROM users WHERE email = $1"
+        args:
+          - "$user_email"
+        assertions:
+          - type: equals
+            column: "email"
+            value: "test@example.com"
+            row: 0
+          - type: count
+            value: 1
+
+  - name: "edge_cases"
+    desc: "Test edge cases and error handling"
+    skip: false
+    retry: 2
+    steps:
+      - name: "empty_result"
+        query: "SELECT * FROM users WHERE id = -1"
+        assert: "count == 0"
+
+      - name: "nullable_columns"
+        query: "SELECT id, name FROM users LIMIT 1"
+        assertions:
+          - type: not_null
+            column: "id"
+          - type: is_null
+            column: "name"
+
+  - name: "nested_suite"
+    desc: "Nested test cases example"
+    cases:
+      - name: "sub_test_1"
+        steps:
+          - name: "check_count"
+            query: "SELECT count(*) as cnt FROM users"
+            assert: "cnt >= 0"
