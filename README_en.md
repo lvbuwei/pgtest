@@ -52,6 +52,7 @@ pgtest is a **declarative, YAML-driven** PostgreSQL database testing framework w
     - [JSON](#json)
     - [JUnit XML](#junit-xml)
   - [CI/CD Integration](#cicd-integration)
+    - [GitHub Actions](#github-actions)
     - [GitLab CI](#gitlab-ci)
     - [Docker Compose (Local)](#docker-compose-local)
   - [CLI Options](#cli-options)
@@ -774,6 +775,26 @@ pgtest -format junit > report.xml
 Generates standard JUnit XML format, directly consumable by Jenkins, GitLab CI, GitHub Actions, and other CI systems.
 
 ## CI/CD Integration
+
+### GitHub Actions
+
+The project includes a GitHub Actions workflow that automatically builds multi-platform binaries and publishes a Release whenever a `v*` tag is pushed:
+
+```bash
+# Publish a new release
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Build artifacts:
+
+| Platform | Architectures |
+|----------|---------------|
+| Linux    | amd64, arm64 |
+| Windows  | amd64, arm64 |
+| macOS    | amd64, arm64 |
+
+You can also trigger the build manually: go to the Actions tab on GitHub, select "Build and Release" → "Run workflow".
 
 ### GitLab CI
 
